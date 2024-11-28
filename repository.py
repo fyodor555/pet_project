@@ -14,7 +14,6 @@ class PersonRepository():
             await session.commit()
             return person.id
         
-
     @classmethod
     async def show_all(cls) -> list[SPerson]:
         async with new_session() as session:
