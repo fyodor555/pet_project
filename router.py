@@ -1,42 +1,38 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
-from repository import PersonRepository
-from schemas import SPersonAdd, SPerson
-from typing import Optional
-
+from fastapi import Depends, APIRouter, File, UploadFile
+from fastapi.responses import FileResponse
+from schemas import STaskAdd
+from repository import TaskRepository
+from config import image_adress
+import shutil
+import os
 
 router = APIRouter(
-    prefix="/persons",
-    tags=["test_api"],
+    prefix="/tasks"
 )
 
 
+
 @router.post("")
-async def add_person(person: Annotated[SPersonAdd, Depends()]):
-    person_id = await PersonRepository.add_one(person)
-    return  {"ok": True, "person_id": person_id}
+async def get_tasks(
+    task: Annotated[STaskAdd, Depends()],
+):
+    task_id = await TaskRepository.add_one(task)
+    return {"ok": True, "task_id": task_id}
 
+@router.get("")
+async def get_tasks():
+    tasks = await TaskRepository.show_all()
+    return {"data": tasks}
 
-@router.get("")  
-async def get_persons(
-    name: Optional[str] = None,
-    surname: Optional[str] = None,
-    age: Optional[int] = None,
-    post: Optional[str] = None,
-    description: Optional[str] = None
-    ) -> list[SPerson]:
-    
-    persons = await PersonRepository.show_all()
-    if not any([name, surname, age, post, description]):
-        return persons
-    
-    else:
-        return_list = []
-        for person in persons:
-            if (name is None or person.name == name) and \
-                (surname is None or person.surname == surname) and \
-                    (age is None or person.age == age) and \
-                        (post is None or person.post == post) and \
-                            (description is None or person.description == description):
-                return_list.append(person)
-        return return_list
+@router.get("/file/download")
+async def download_file():
+    return FileResponse(path='image.png', filename='image.png', media_type='multipart/form-data')
+
+@router.post("/file/upload")
+async def upload_file(file: UploadFile):
+    with open(file.filename, "wb") as wf:
+        shutil.copyfileobj(file.file, wf)
+        os.rename(f'{file.filename}', image_adress)
+        file.file.close()
+    return file.filename
