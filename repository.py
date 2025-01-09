@@ -1,23 +1,34 @@
-from database import new_session, PersonTable
-from schemas import SPersonAdd, SPerson
+from database import new_session, TaskTable
+from schemas import STaskAdd, STaskGet
 from sqlalchemy import select
 
 
-class PersonRepository():
+class TaskRepository():
     @classmethod
-    async def add_one(cls, data: SPersonAdd) -> int:
+    async def add_one(cls, data: STaskAdd) -> int:
         async with new_session() as session:
-            person_dictionary = data.model_dump()
-            person = PersonTable(**person_dictionary)
-            session.add(person)
+            task_dictionary = data.model_dump()
+            task = TaskTable(**task_dictionary)
+            session.add(task)
             await session.flush()
             await session.commit()
-            return person.id
+            return task.id
         
     @classmethod
-    async def show_all(cls) -> list[SPerson]:
+    async def add_image(cls, data: str):
         async with new_session() as session:
-            query = select(PersonTable)
+            task = TaskTable()
+            task.image_adress = data
+            session.add(task.image_adress)
+            await session.flush()
+            await session.commit()
+            return task.id
+    
+    @classmethod
+    async def show_all(cls) -> list[STaskGet]:
+        async with new_session() as session:
+            query = select(TaskTable)
             result = await session.execute(query)
-            person_models = result.scalars().all()
-            return person_models
+            task_models = result.scalars().all()
+            return task_models
+        
