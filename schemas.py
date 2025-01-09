@@ -2,18 +2,11 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class SPersonAdd(BaseModel):
-    name: str
-    surname: str
-    post: Optional[str] = None
-    age: Optional[int] = None
+class STaskAdd(BaseModel):
+    title: str
     discription: Optional[str] = None
 
 
-class SPerson(SPersonAdd):
+class STaskGet(STaskAdd):
     id: int
 
-
-class SPersonId(BaseModel):
-    ok: bool = True
-    person_id: int
